@@ -1,18 +1,32 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
+    <title>YouTube 댓글 차단기</title>
     <meta charset="UTF-8">
-    <title>댓글 차단기</title>
-    <script src="popup.js" defer></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            width: 250px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+        #toggleButton, #saveKeywordsButton {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        #toggleButton:hover, #saveKeywordsButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h2>댓글 차단 설정</h2>
-    <label>
-        <input type="checkbox" id="toggleBlock">
-        댓글 차단 활성화
-    </label>
-    <br>
-    <button id="openOptions">설정 페이지</button>
+    <button id="toggleButton">댓글/채팅 숨기기</button>
+    <input type="text" id="keywordsInput" placeholder="차단할 키워드를 입력하세요">
+    <button id="saveKeywordsButton">키워드 저장</button>
+    <script src="popup.js"></script>
 </body>
 </html>

@@ -1,29 +1,60 @@
 console.log("YouTube Comments Blocker Loaded");
 
-// 댓글 & 라이브 채팅 숨기는 함수
+let commentsHidden = false;
+let blockedKeywords = [];
+
+// 댓글 & 라이브 채팅 숨기는 함수 
 const hideCommentsAndLiveChat = () => {
-    let commentsSection = document.querySelector('#comments'); // 일반 댓글
-    let liveChat = document.querySelector('#chat'); // 라이브 채팅
+    let commentsSection = document.querySelector('#comments');
+    let liveChat = document.querySelector('#chat');
+    let liveChatIframe = document.querySelector('ytd-live-chat-frame');
+
+    console.log("현재 상태:", commentsHidden); // 디버깅용
 
     if (commentsSection) {
-        commentsSection.style.display = 'none';
-        console.log("Comments hidden");
+        // 키워드 필터링
+        const comments = commentsSection.querySelectorAll('#content-text');
+        comments.forEach(comment => {
+            if (blockedKeywords.some(keyword => comment.textContent.includes(keyword))) {
+                comment.closest('ytd-comment-thread-renderer').style.display = 'none';
+            }
+        });
+        
+        // 전체 댓글 섹션 표시/숨김
+        commentsSection.style.display = commentsHidden ? 'none' : 'block';
     }
 
     if (liveChat) {
-        liveChat.style.display = 'none';
-        console.log("Live chat hidden");
+        liveChat.style.display = commentsHidden ? 'none' : 'block';
+    }
+
+    if (liveChatIframe) {
+        liveChatIframe.style.display = commentsHidden ? 'none' : 'block';
     }
 };
 
-// DOM 변화 감지 (유튜브가 새 영상 로드할 때 실행)
-const observer = new MutationObserver(() => {
-    console.log("DOM changed, checking for comments...");
+// 초기 상태 로드
+chrome.storage.sync.get(['commentsHidden', 'blockedKeywords'], (result) => {
+    commentsHidden = result.commentsHidden || false;
+    blockedKeywords = result.blockedKeywords || [];
     hideCommentsAndLiveChat();
 });
 
-// 페이지의 body 요소를 감시 (새 콘텐츠가 로드될 때 실행)
+// DOM 변화 감지
+const observer = new MutationObserver(() => {
+    hideCommentsAndLiveChat();
+});
+
 observer.observe(document.body, { childList: true, subtree: true });
 
-// 초기에 한 번 실행
-hideCommentsAndLiveChat();
+// 메시지 수신 처리
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'toggleComments') {
+        chrome.storage.sync.get('commentsHidden', (result) => {
+            commentsHidden = result.commentsHidden;
+            console.log("토글 후 상태:", commentsHidden); // 디버깅용
+            hideCommentsAndLiveChat();
+        });
+    }
+    return true;
+});
